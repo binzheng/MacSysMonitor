@@ -1,0 +1,225 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		MACSYSBUILDAPP000000000000 /* MacSysMonitorApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = MACSYSFILEAPP000000000000 /* MacSysMonitorApp.swift */; };
+		MACSYSBUILDSYS000000000000 /* SystemMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = MACSYSFILESYS000000000000 /* SystemMonitor.swift */; };
+		MACSYSBUILDMONSET000000000 /* MonitorSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = MACSYSFILESET000000000000 /* MonitorSettings.swift */; };
+		MACSYSBUILDGRAPH0000000000 /* GraphView.swift in Sources */ = {isa = PBXBuildFile; fileRef = MACSYSFILEGRAPH000000000 /* GraphView.swift */; };
+		MACSYSBUILDMENU00000000000 /* MenuBarViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = MACSYSFILEMENU00000000000 /* MenuBarViews.swift */; };
+		MACSYSBUILDICON00000000000 /* AppIcon.icns in Resources */ = {isa = PBXBuildFile; fileRef = MACSYSFILEICON00000000000 /* AppIcon.icns */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		MACSYSFILEAPP000000000000 /* MacSysMonitorApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/MacSysMonitor/MacSysMonitorApp.swift; sourceTree = "<group>"; };
+		MACSYSFILESYS000000000000 /* SystemMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/MacSysMonitor/SystemMonitor.swift; sourceTree = "<group>"; };
+		MACSYSFILESET000000000000 /* MonitorSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/MacSysMonitor/MonitorSettings.swift; sourceTree = "<group>"; };
+		MACSYSFILEGRAPH000000000 /* GraphView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/MacSysMonitor/GraphView.swift; sourceTree = "<group>"; };
+		MACSYSFILEMENU00000000000 /* MenuBarViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/MacSysMonitor/MenuBarViews.swift; sourceTree = "<group>"; };
+		MACSYSFILEINFO00000000000 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = MacSysMonitor/Info.plist; sourceTree = "<group>"; };
+		MACSYSFILEICON00000000000 /* AppIcon.icns */ = {isa = PBXFileReference; lastKnownFileType = image.icns; path = MacSysMonitor/AppIcon.icns; sourceTree = "<group>"; };
+		MACSYSPRODUCT000000000000 /* MacSysMonitor.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MacSysMonitor.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		MACSYSFRAMEWORKSPHASE0000 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		MACSYSGROUPROOT /* Project */ = {
+			isa = PBXGroup;
+			children = (
+				MACSYSSOURCES /* Sources */,
+				MACSYSRESOURCES /* Resources */,
+				MACSYSPRODUCTS /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		MACSYSSOURCES /* Sources */ = {
+			isa = PBXGroup;
+			children = (
+				MACSYSFILEAPP000000000000 /* MacSysMonitorApp.swift */,
+				MACSYSFILESYS000000000000 /* SystemMonitor.swift */,
+				MACSYSFILESET000000000000 /* MonitorSettings.swift */,
+				MACSYSFILEGRAPH000000000 /* GraphView.swift */,
+				MACSYSFILEMENU00000000000 /* MenuBarViews.swift */,
+			);
+			path = "";
+			sourceTree = "<group>";
+		};
+		MACSYSRESOURCES /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				MACSYSFILEINFO00000000000 /* Info.plist */,
+				MACSYSFILEICON00000000000 /* AppIcon.icns */,
+			);
+			sourceTree = "<group>";
+		};
+		MACSYSPRODUCTS /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				MACSYSPRODUCT000000000000 /* MacSysMonitor.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		MACSYSMONITORTARGET /* MacSysMonitor */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = MACSYSCONFIGLIST0000000000 /* Build configuration list for PBXNativeTarget "MacSysMonitor" */;
+			buildPhases = (
+				MACSYSSOURCESPHASE0000000 /* Sources */,
+				MACSYSFRAMEWORKSPHASE0000 /* Frameworks */,
+				MACSYSRESOURCEPHASE00000 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MacSysMonitor;
+			productName = MacSysMonitor;
+			productReference = MACSYSPRODUCT000000000000 /* MacSysMonitor.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		MACSYSPROJECT000000000000 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					MACSYSMONITORTARGET = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = MACSYSPROJECTCONFIG0000000 /* Build configuration list for PBXProject "MacSysMonitor" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = MACSYSGROUPROOT /* Project */;
+			productRefGroup = MACSYSPRODUCTS /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				MACSYSMONITORTARGET /* MacSysMonitor */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		MACSYSRESOURCEPHASE00000 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				MACSYSBUILDICON00000000000 /* AppIcon.icns in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		MACSYSSOURCESPHASE0000000 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				MACSYSBUILDAPP000000000000 /* MacSysMonitorApp.swift in Sources */,
+				MACSYSBUILDSYS000000000000 /* SystemMonitor.swift in Sources */,
+				MACSYSBUILDMONSET000000000 /* MonitorSettings.swift in Sources */,
+				MACSYSBUILDGRAPH0000000000 /* GraphView.swift in Sources */,
+				MACSYSBUILDMENU00000000000 /* MenuBarViews.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		MACSYSCONFIGDEBUG000000000 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = MacSysMonitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.MacSysMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.9;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		MACSYSCONFIGRELEASE000000 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = YES;
+				INFOPLIST_FILE = MacSysMonitor/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "@executable_path/../Frameworks";
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.MacSysMonitor;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 5.9;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		MACSYSPROJECTCONFIG0000000 /* Build configuration list for PBXProject "MacSysMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				MACSYSCONFIGDEBUG000000000 /* Debug */,
+				MACSYSCONFIGRELEASE000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		MACSYSCONFIGLIST0000000000 /* Build configuration list for PBXNativeTarget "MacSysMonitor" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				MACSYSCONFIGDEBUG000000000 /* Debug */,
+				MACSYSCONFIGRELEASE000000 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = MACSYSPROJECT000000000000 /* Project object */;
+}
