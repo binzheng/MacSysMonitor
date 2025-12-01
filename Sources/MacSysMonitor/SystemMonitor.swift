@@ -1,6 +1,8 @@
 import Foundation
 import Combine
 import AppKit
+import IOKit.ps
+import IOKit
 
 struct MetricsSample: Identifiable {
     let id = UUID()
@@ -44,6 +46,7 @@ struct NetworkCounters {
     var outbound: UInt64
 }
 
+@MainActor
 final class SystemMonitor: ObservableObject {
     @Published private(set) var samples: [MetricsSample] = []
     @Published var settings = MonitorSettings()
@@ -61,7 +64,7 @@ final class SystemMonitor: ObservableObject {
         startTimer()
     }
 
-    deinit {
+    @MainActor deinit {
         timer?.cancel()
     }
 
@@ -182,27 +185,30 @@ final class SystemMonitor: ObservableObject {
 
         guard result == KERN_SUCCESS else { return (0, 0, 0, 0, 0, 0, 0) }
 
-        let pageSize = Double(vm_kernel_page_size)
+        let pageSize = Double(sysconf(_SC_PAGESIZE))
         let free = Double(vmStats.free_count) * pageSize
         let active = Double(vmStats.active_count) * pageSize
         let inactive = Double(vmStats.inactive_count) * pageSize
         let wired = Double(vmStats.wire_count) * pageSize
         let compressed = Double(vmStats.compressor_page_count) * pageSize
+        let anonymous = Double(vmStats.internal_page_count) * pageSize
 
-        let used = active + inactive + wired + compressed
-        let total = used + free
+        // アクティブ + ワイヤード + 圧縮を使用中として扱い、非アクティブは余裕分に寄せる
+        let used = active + wired + compressed
+        let total = used + free + inactive
 
         let usedMB = used / (1024 * 1024)
         let freeMB = free / (1024 * 1024)
         let percent = total > 0 ? (used / total) * 100 : 0
 
         // 詳細情報（GB単位）
-        let appMemory = (active + inactive) / (1024 * 1024 * 1024)
-        let wiredMemory = wired / (1024 * 1024 * 1024)
-        let compressedMemory = compressed / (1024 * 1024 * 1024)
+        // アプリメモリ = anonymous pages（ファイルに裏付けられていないメモリ）
+        let appMemory = anonymous / 1_000_000_000
+        let wiredMemory = wired / 1_000_000_000
+        let compressedMemory = compressed / 1_000_000_000
 
-        // メモリプレッシャー（簡易版：使用率ベース）
-        let pressure = percent
+        // メモリプレッシャー（使用中メモリの割合）
+        let pressure = total > 0 ? (used / total) * 100 : 0
 
         return (percent, usedMB, freeMB, pressure, appMemory, wiredMemory, compressedMemory)
     }
@@ -286,27 +292,96 @@ final class SystemMonitor: ObservableObject {
 
     // ストレージ情報を取得
     private func storageInfo() -> (usedGB: Double, totalGB: Double, percent: Double) {
-        let fileURL = URL(fileURLWithPath: "/")
         do {
-            let values = try fileURL.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey])
+            let url = URL(fileURLWithPath: "/")
+            let values = try url.resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityForImportantUsageKey])
+
             if let total = values.volumeTotalCapacity,
-               let available = values.volumeAvailableCapacity {
-                let totalGB = Double(total) / (1024 * 1024 * 1024)
-                let availableGB = Double(available) / (1024 * 1024 * 1024)
-                let usedGB = totalGB - availableGB
-                let percent = (usedGB / totalGB) * 100
+               let available = values.volumeAvailableCapacityForImportantUsage {
+                // 10進GB（1000^3）で表示（macOSのシステム設定に合わせる）
+                let totalGB = Double(total) / 1_000_000_000
+                let availableGB = Double(available) / 1_000_000_000
+                let usedGB = max(0, totalGB - availableGB)
+                let percent = totalGB > 0 ? (usedGB / totalGB) * 100 : 0
                 return (usedGB, totalGB, percent)
             }
-        } catch {
-            // エラー時のデフォルト値
-        }
+        } catch {}
         return (0, 0, 0)
     }
 
     // バッテリー情報を取得
     private func batteryInfo() -> (level: Double, isCharging: Bool, capacity: Double, cycleCount: Int, temperature: Double) {
         // IOKit を使用してバッテリー情報を取得
-        // 簡易版：デフォルト値を返す（完全な実装にはIOKitの詳細な実装が必要）
-        return (50.0, false, 95.0, 0, 30.0)
+        guard let snapshot = IOPSCopyPowerSourcesInfo()?.takeRetainedValue(),
+              let sources = IOPSCopyPowerSourcesList(snapshot)?.takeRetainedValue() as? [AnyObject],
+              !sources.isEmpty else {
+            return (0, false, 0, 0, 0)
+        }
+
+        var level: Double = 0
+        var isCharging = false
+        var capacity: Double = 0
+        var cycles = 0
+        var temperature: Double = 0
+
+        // 基本的なバッテリー情報を取得
+        for source in sources {
+            guard let info = IOPSGetPowerSourceDescription(snapshot, source)?.takeUnretainedValue() as? [String: AnyObject] else {
+                continue
+            }
+
+            // バッテリーのみを対象とする
+            guard let type = info[kIOPSTypeKey] as? String,
+                  type == kIOPSInternalBatteryType else {
+                continue
+            }
+
+            // 現在の充電レベル（IOPSは相対値%を返す）
+            let currentCapacity = info[kIOPSCurrentCapacityKey] as? Int ?? 0
+            let maxCap = info[kIOPSMaxCapacityKey] as? Int ?? 0
+            if maxCap > 0 {
+                level = (Double(currentCapacity) / Double(maxCap)) * 100
+            }
+
+            // 充電状態
+            isCharging = info[kIOPSIsChargingKey] as? Bool ?? false
+        }
+
+        // 詳細情報を IORegistry から取得（こちらはmAh単位の実容量）
+        let service = IOServiceGetMatchingService(kIOMainPortDefault, IOServiceMatching("AppleSmartBattery"))
+        if service != 0 {
+            defer { IOObjectRelease(service) }
+
+            // 最大容量と設計容量（mAh単位）
+            var maxCapacity: Int = 0
+            var designCapacity: Int = 0
+
+            // AppleRawMaxCapacityはmAh単位の実容量
+            if let maxCap = IORegistryEntryCreateCFProperty(service, "AppleRawMaxCapacity" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Int {
+                maxCapacity = maxCap
+            }
+            if let designCap = IORegistryEntryCreateCFProperty(service, "DesignCapacity" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Int {
+                designCapacity = designCap
+            }
+
+            // バッテリーの健康度を計算
+            if designCapacity > 0 && maxCapacity > 0 {
+                capacity = (Double(maxCapacity) / Double(designCapacity)) * 100
+            }
+
+            // サイクルカウント
+            if let cycleCount = IORegistryEntryCreateCFProperty(service, "CycleCount" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Int {
+                cycles = cycleCount
+            }
+
+            // 温度（0.1K単位で返されるため、10で割ってケルビンから摂氏に変換）
+            if let temp = IORegistryEntryCreateCFProperty(service, "Temperature" as CFString, kCFAllocatorDefault, 0)?.takeRetainedValue() as? Int {
+                // 0.1K単位で返される（例：2980 = 298.0K = 24.85°C）
+                let kelvin = Double(temp) / 10.0
+                temperature = kelvin - 273.15
+            }
+        }
+
+        return (level, isCharging, capacity, cycles, temperature)
     }
 }

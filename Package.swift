@@ -22,5 +22,10 @@ let package = Package(
                 .unsafeFlags(["-parse-as-library"])
             ]
         ),
+        .testTarget(
+            name: "MacSysMonitorTests",
+            dependencies: ["MacSysMonitor"],
+            path: "Tests/MacSysMonitorTests"
+        )
     ]
 )

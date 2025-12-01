@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:MacSysMonitor}",
+            "name": "Debug MacSysMonitor",
+            "target": "MacSysMonitor",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug MacSysMonitor"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:MacSysMonitor}",
+            "name": "Release MacSysMonitor",
+            "target": "MacSysMonitor",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release MacSysMonitor"
+        }
+    ]
+}

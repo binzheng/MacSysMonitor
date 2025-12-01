@@ -1,36 +1,117 @@
 # MacSysMonitor
 
-macOS メニューバー常駐型の軽量ステータスモニターです。CPU / メモリ / ネットワーク（送受信）を 1 秒間隔で取得し、メニューバー上に簡易グラフを描画します。クリックすると詳細（％、MB、Mbps）がポップアップ表示されます。
+macOS メニューバー常駐型の軽量システムモニターです。CPU、メモリ、ネットワーク、ストレージ、バッテリーの状態をリアルタイムで監視し、メニューバーにコンパクトに表示します。
+
+![MacSysMonitor Screenshot](image/image.png)
+
+## 機能
+
+- **CPU 監視**: システム、ユーザー、アイドル状態を詳細表示
+- **メモリ監視**: 使用率、アプリメモリ、確保メモリ、圧縮メモリ、プレッシャー
+- **ネットワーク監視**: アップロード/ダウンロード速度、ローカルIP表示
+- **ストレージ監視**: 使用量と空き容量
+- **バッテリー監視**: 充電レベル、最大容量、サイクル回数、温度
+- **表示切替**: メニューバーアイコンでCPU/メモリ/ネットワークを切り替え可能
+- **更新間隔調整**: 0.5〜10秒で設定可能（デフォルト1秒）
+- **軽量設計**: CPU負荷 <3%、メモリ使用量 <30MB
 
 ## 必要環境
-- macOS 13 以降 (Sonoma で確認想定)
-- Xcode 15 / SwiftUI + AppKit
+
+- macOS 14.0 以降（Sonoma推奨）
+- Xcode 15+ / Swift 5.9+
 
 ## プロジェクト構成
-- `MacSysMonitor.xcodeproj` … Xcode プロジェクト
-- `MacSysMonitor/Info.plist` … Dock を出さないための LSUIElement などを定義
-- `Sources/MacSysMonitor/` … アプリ本体
-  - `MacSysMonitorApp.swift` … `MenuBarExtra` エントリポイント
-  - `SystemMonitor.swift` … CPU / メモリ / ネットワーク収集ロジック
-  - `MonitorSettings.swift` … 更新間隔を `UserDefaults` に保存
-  - `GraphView.swift` … メニューバーとメニュー内の折れ線グラフ描画
-  - `MenuBarViews.swift` … アイコン表示と詳細メニュー UI
+
+```
+MacSysMonitor/
+├── MacSysMonitor.xcodeproj/      # Xcodeプロジェクト
+├── Package.swift                  # Swift Package Manager設定
+├── Sources/MacSysMonitor/         # ソースコード
+│   ├── MacSysMonitorApp.swift    # エントリポイント、MenuBarExtraセットアップ
+│   ├── SystemMonitor.swift       # メトリクス収集エンジン（CPU/メモリ/ネットワーク/ストレージ/バッテリー）
+│   ├── MonitorSettings.swift     # 設定の永続化（UserDefaults）
+│   ├── GraphView.swift           # Canvas折れ線グラフレンダラー
+│   └── MenuBarViews.swift        # メニューバーアイコン＋詳細ポップアップUI
+├── Tests/MacSysMonitorTests/     # ユニットテスト
+├── MacSysMonitor/                # リソース
+│   ├── Info.plist               # LSUIElement=1でDock非表示
+│   └── AppIcon.icns             # 角丸アプリアイコン
+└── scripts/                      # ビルド自動化
+    ├── run_local.sh             # クイックビルド＋インストール＋起動
+    ├── make_dmg.sh              # DMGパッケージ作成
+    └── generate_rounded_icon.swift  # アイコン生成スクリプト
+```
 
 ## ビルド & 実行手順
-1. Xcode で `MacSysMonitor.xcodeproj` を開く。
-2. ターゲットは `MacSysMonitor` のまま、`Signing & Capabilities` でチームを設定（開発用の自動署名で OK）。
-3. Run（⌘R）するとメニューバー右上に小さなグラフが常駐します。クリックで詳細ドロップダウンを開きます。
-4. Dock アイコンは表示されません（`LSUIElement=1`）。
+
+### 方法1: スクリプトを使用（推奨）
+
+```bash
+# クイックビルド & インストール & 起動
+./scripts/run_local.sh
+
+# DMGパッケージ作成（配布用）
+./scripts/make_dmg.sh
+# 出力先: dist/MacSysMonitor.dmg
+```
+
+### 方法2: Xcodeから実行
+
+1. `open MacSysMonitor.xcodeproj` でXcodeを起動
+2. Signing & Capabilitiesでチームを設定（自動署名）
+3. ⌘R で実行 → メニューバーに常駐
+4. Dockアイコンは表示されません（`LSUIElement=1`）
 
 ## 使い方
-- メニューバーのグラフは CPU=赤、メモリ=青、ネットワーク（送受合算）=緑。
-- メニュー内には現在値を % / MB / Mbps で表示し、60 サンプルまでの履歴グラフを表示します。
-- 「更新間隔」ステッパーで 0.5〜10 秒を設定すると `UserDefaults` に保存され、次回起動時も保持されます。
 
-## データ取得方法
-- CPU: `host_statistics` の CPU ticks 差分から使用率を算出
-- メモリ: `host_statistics64` でページ情報を取得し、物理メモリに対する使用率を計算
-- ネットワーク: `getifaddrs` で各 IF の `if_data` バイトカウンタを合算し、差分から Mbps を計算（`lo0` は除外）
+### メニューバー表示
+- アイコンをクリックして表示メトリクスを切り替え：
+  - **CPU**: 使用率パーセンテージ
+  - **メモリ**: 使用率パーセンテージ
+  - **ネットワーク**: 送受信合計速度（Mbps）
+
+### 詳細メニュー
+- アイコンをクリックして詳細を表示：
+  - 各メトリクスの現在値と内訳
+  - プログレスバーで視覚化
+  - 更新間隔の調整（0.5〜10秒）
+- メトリクスセクションをクリックして、メニューバー表示を切り替え可能
+
+### 設定
+- 更新間隔は `UserDefaults` に保存され、次回起動時も保持されます
+- 表示メトリクスの選択も永続化されます
+
+## テスト実行
+
+```bash
+# すべてのテストを実行
+swift test
+
+# 詳細出力付き
+swift test --verbose
+
+# 特定のテストのみ
+swift test --filter SystemMonitorTests
+```
+
+## アーキテクチャ
+
+### データ収集
+
+**SystemMonitor.swift** - 0.5〜10秒ごとにシステムメトリクスを収集：
+
+- **CPU**: `host_statistics` でCPU ticks差分から使用率を算出
+- **メモリ**: `host_statistics64` で `internal_page_count`（anonymous pages）をアプリメモリとして取得
+- **ネットワーク**: `getifaddrs` + `if_data` でバイトカウンタ差分からMbpsを計算（lo0除外）
+- **ストレージ**: `volumeAvailableCapacityForImportantUsage` で正確な使用量を取得
+- **バッテリー**: IOKit（`AppleSmartBattery`）から `AppleRawMaxCapacity`、温度（0.1K単位→摂氏変換）を取得
+
+### データフロー
+
+1. `SystemMonitor.refresh()` → システムAPIからメトリクス収集
+2. `MetricsSample` を120サンプルのローリングバッファに追加
+3. SwiftUIビュー（`MenuBarIconView`、`DetailMenuView`）が `@Published` 経由で更新を監視
+4. `GraphView` がCanvasで折れ線グラフを描画
 
 ## 自動起動 (LaunchAgent) 例
 `~/Library/LaunchAgents/com.example.macsysmonitor.plist` を作成し、以下を保存してください（パスは自身のビルド結果に合わせて調整）。
@@ -60,6 +141,50 @@ launchctl load ~/Library/LaunchAgents/com.example.macsysmonitor.plist
 ```
 アンロードは `launchctl unload ...` で行えます。
 
-## 補足
-- LSUIElement を使っているため Dock に表示されません。デバッグ中にメニューバーが消えた場合は Activity Monitor でプロセスを終了してください。
-- 更新間隔を短くしすぎると自己負荷が増えるので 0.5〜1 秒程度を推奨します（目標 CPU 負荷 <3%）。
+## 開発ガイド
+
+### アイコンの再生成
+
+```bash
+# 角丸アイコンの生成
+swift scripts/generate_rounded_icon.swift
+iconutil -c icns AppIcon.iconset -o MacSysMonitor/AppIcon.icns
+```
+
+角丸の度合いを調整する場合は、スクリプト内の `cornerRadius = size * 0.2` の値を変更してください。
+
+### デバッグ
+
+- `LSUIElement=1` のため、Dockにアイコンが表示されません
+- メニューバーから応答がない場合は、アクティビティモニタで `MacSysMonitor` を終了
+- Xcodeのコンソールでデバッグ出力を確認できます
+
+### パフォーマンス目標
+
+- CPU負荷: <3%（更新間隔1秒時）
+- メモリ使用量: <30MB
+- 更新間隔: 0.5〜1秒推奨（短すぎると自己負荷が増加）
+
+## トラブルシューティング
+
+### メニューバーアイコンが表示されない
+- アクティビティモニタで既存のプロセスを終了して再起動
+- `killall MacSysMonitor` で強制終了
+
+### メトリクスの値がおかしい
+- 初回サンプルは差分計算のため0または不正確な値を返すことがあります
+- 数秒待つと正確な値が表示されます
+
+### ビルドエラー
+- Xcode 15以降、macOS 14 SDK が必要です
+- Signing & Capabilitiesでチームが設定されているか確認
+
+## ライセンス
+
+MIT License - 詳細は [LICENSE](LICENSE) ファイルを参照してください。
+
+## クレジット
+
+- SwiftUI + AppKit でメニューバーアプリ実装
+- mach カーネルAPI、IOKit を使用したシステムメトリクス収集
+- Canvas による軽量グラフ描画
